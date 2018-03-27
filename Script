@@ -1,0 +1,34 @@
+Data_Source:
+LOAD * Inline [
+ID, NAME, COUNT
+1,CAJ,3
+2,ANA,1
+3,BZ,3
+4,PAT,12
+5,DOOM,2
+];
+
+NoConcatenate
+Final:
+LOAD * Inline [
+nID, nNAME, nCOUNT, nnID
+];
+
+//The goal is to duplicate each row according to the count
+//for exemple : if count equal 2, duplicate the row two times (3 rows in final)
+//Start
+
+FOR Each value in FieldValueList('ID')
+	LET vID = value;
+	LET vCOUNTER = Peek('COUNT', $(vID)-1, 'Data_Source');		//see definition of Peek() function
+	DO WHILE vCOUNTER >0
+		Concatenate(Final)
+		LOAD ID as nID
+		,NAME as nNAME
+		,COUNT as nCOUNT
+		,ID&'-'&$(vCOUNTER) as nnID			//clef unique
+		Resident Data_Source
+		Where ID = $(vID);
+		LET vCOUNTER = $(vCOUNTER) - 1;
+	LOOP
+NEXT
